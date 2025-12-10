@@ -7,7 +7,7 @@ namespace App\Modules\Book\Application\Query;
 use App\Modules\Book\Application\ViewModel\BookViewModel;
 use App\Modules\Book\Domain\Repository\IBookRepository;
 
-readonly class GetAllBooksQueryHandler
+final readonly class GetAllBooksQueryHandler
 {
     public function __construct(
         private IBookRepository $bookRepository

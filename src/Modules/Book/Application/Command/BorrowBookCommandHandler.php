@@ -26,7 +26,7 @@ final readonly class BorrowBookCommandHandler
             throw new BookNotFoundError();
         }
 
-        $user = $this->userRepository->findById($command->userId);
+        $user = $this->userRepository->findById($command->userId->value);
         if (!$user) {
             throw new UserNotFoundError();
         }

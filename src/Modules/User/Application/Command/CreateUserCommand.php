@@ -4,10 +4,28 @@ declare(strict_types=1);
 
 namespace App\Modules\User\Application\Command;
 
-class CreateUserCommand
+use Symfony\Component\HttpFoundation\Request;
+
+final readonly class CreateUserCommand
 {
-    public function __construct(
-        public readonly string $name
+    public string $name;
+
+    private function __construct(
+        string $name
     ) {
+        $this->name = $name;
+    }
+
+    public static function fromRequest(Request $request): self
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['name'])) {
+            throw new \InvalidArgumentException('Name is required');
+        }
+
+        return new self(
+            name: $data['name']
+        );
     }
 }

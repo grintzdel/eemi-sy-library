@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\User\Application\Query;
 
-class GetUserByIdQuery
+use App\Modules\Shared\Domain\ValueObject\UserId;
+
+final readonly class GetUserByIdQuery
 {
     public function __construct(
-        public readonly int $id
+        public UserId $id
     ) {
     }
 }

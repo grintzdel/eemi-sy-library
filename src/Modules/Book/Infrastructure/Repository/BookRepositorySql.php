@@ -27,7 +27,7 @@ final readonly class BookRepositorySql implements IBookRepository
             ->findOneBy(['title' => $title]);
     }
 
-    public function findById(int $id): ?BookEntity
+    public function findById(string $id): ?BookEntity
     {
         return $this->entityManager
             ->getRepository(BookEntity::class)

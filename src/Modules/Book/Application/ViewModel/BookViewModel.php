@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Book\Application\ViewModel;
 
-readonly class BookViewModel
+final readonly class BookViewModel
 {
     public function __construct(
         public int        $id,

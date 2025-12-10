@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\User\Presentation\Controller;
 
+use App\Modules\Shared\Domain\ValueObject\UserId;
 use App\Modules\Shared\Presentation\Controllers\AppController;
 use App\Modules\User\Application\Command\CreateUserCommand;
 use App\Modules\User\Application\Query\GetAllUsersQuery;
@@ -28,10 +29,10 @@ final class UserController extends AppController
     /**
      * @throws ExceptionInterface
      */
-    #[Route('/{id}', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function getUserById(int $id): JsonResponse
+    #[Route('/{id}', methods: ['GET'])]
+    public function getUserById(string $id): JsonResponse
     {
-        return $this->dispatchQuery(new GetUserByIdQuery($id));
+        return $this->dispatchQuery(new GetUserByIdQuery(UserId::fromString($id)));
     }
 
     /**
@@ -40,10 +41,6 @@ final class UserController extends AppController
     #[Route('', methods: ['POST'])]
     public function createUser(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        return $this->dispatch(new CreateUserCommand(
-            name: $data['name']
-        ));
+        return $this->dispatch(CreateUserCommand::fromRequest($request));
     }
 }

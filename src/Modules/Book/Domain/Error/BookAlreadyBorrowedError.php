@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Book\Domain\Error;
 
-class BookAlreadyBorrowedError extends BookError
+final class BookAlreadyBorrowedError extends BookError
 {
     public function __construct()
     {

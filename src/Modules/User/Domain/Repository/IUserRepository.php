@@ -8,7 +8,7 @@ use App\Modules\User\Infrastructure\Entity\UserEntity;
 
 interface IUserRepository
 {
-    public function findById(int $id): ?UserEntity;
+    public function findById(string $id): ?UserEntity;
 
     public function findAll(): array;
 

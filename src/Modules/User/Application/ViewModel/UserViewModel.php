@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\User\Application\ViewModel;
 
-class UserViewModel
+final readonly class UserViewModel
 {
     public function __construct(
-        public readonly int $id,
-        public readonly string $name,
-        public readonly array $borrowedBooks
+        public int    $id,
+        public string $name,
+        public array  $borrowedBooks
     ) {
     }
 }

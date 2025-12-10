@@ -11,9 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 class BookEntity
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $title;
@@ -30,7 +29,12 @@ class BookEntity
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTime $returnedAt = null;
 
-    public function getId(): ?int
+    public function __construct()
+    {
+        $this->id = uniqid('book_', true);
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }

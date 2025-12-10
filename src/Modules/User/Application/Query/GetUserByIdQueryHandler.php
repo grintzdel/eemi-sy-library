@@ -8,7 +8,7 @@ use App\Modules\User\Application\ViewModel\UserViewModel;
 use App\Modules\User\Domain\Error\UserNotFoundError;
 use App\Modules\User\Domain\Repository\IUserRepository;
 
-readonly class GetUserByIdQueryHandler
+final readonly class GetUserByIdQueryHandler
 {
     public function __construct(
         private IUserRepository $userRepository
@@ -17,7 +17,7 @@ readonly class GetUserByIdQueryHandler
 
     public function handle(GetUserByIdQuery $query): UserViewModel
     {
-        $user = $this->userRepository->findById($query->id);
+        $user = $this->userRepository->findById($query->id->value);
 
         if (!$user) {
             throw new UserNotFoundError();

@@ -12,7 +12,7 @@ interface IBookRepository
 
     public function findByTitle(string $title): ?BookEntity;
 
-    public function findById(int $id): ?BookEntity;
+    public function findById(string $id): ?BookEntity;
 
     public function findAll(): array;
 

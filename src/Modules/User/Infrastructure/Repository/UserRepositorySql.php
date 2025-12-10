@@ -8,7 +8,7 @@ use App\Modules\User\Domain\Repository\IUserRepository;
 use App\Modules\User\Infrastructure\Entity\UserEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
-readonly class UserRepositorySql implements IUserRepository
+final readonly class UserRepositorySql implements IUserRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager

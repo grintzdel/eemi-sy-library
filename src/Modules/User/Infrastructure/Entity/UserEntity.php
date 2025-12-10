@@ -12,9 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 class UserEntity
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -22,7 +21,12 @@ class UserEntity
     #[ORM\Column(type: 'json')]
     private array $borrowedBooks = [];
 
-    public function getId(): ?int
+    public function __construct()
+    {
+        $this->id = uniqid('user_', true);
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }

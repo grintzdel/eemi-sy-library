@@ -8,6 +8,7 @@ use App\Modules\Book\Application\Command\AddBookCommand;
 use App\Modules\Book\Application\Command\BorrowBookCommand;
 use App\Modules\Book\Application\Query\GetAllBooksQuery;
 use App\Modules\Book\Application\Query\GetBookByIdQuery;
+use App\Modules\Shared\Domain\ValueObject\BookId;
 use App\Modules\Shared\Presentation\Controllers\AppController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,10 +30,10 @@ final class BookController extends AppController
     /**
      * @throws ExceptionInterface
      */
-    #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function getBookById(int $id): JsonResponse
+    #[Route('/{id}', methods: ['GET'])]
+    public function getBookById(string $id): JsonResponse
     {
-        return $this->dispatchQuery(new GetBookByIdQuery($id));
+        return $this->dispatchQuery(new GetBookByIdQuery(BookId::fromString($id)));
     }
 
     /**
@@ -41,18 +42,7 @@ final class BookController extends AppController
     #[Route('', methods: ['POST'])]
     public function addBook(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['title']) || !isset($data['author'])) {
-            return $this->json(['error' => 'Title and author are required'], 400);
-        }
-
-        $command = new AddBookCommand(
-            title: $data['title'],
-            author: $data['author']
-        );
-
-        return $this->dispatch($command);
+        return $this->dispatch(AddBookCommand::fromRequest($request));
     }
 
     /**
@@ -61,17 +51,6 @@ final class BookController extends AppController
     #[Route('/borrow', methods: ['POST'])]
     public function borrowBook(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['bookTitle']) || !isset($data['userId'])) {
-            return $this->json(['error' => 'Book title and user ID are required'], 400);
-        }
-
-        $command = new BorrowBookCommand(
-            bookTitle: $data['bookTitle'],
-            userId: (int) $data['userId']
-        );
-
-        return $this->dispatch($command);
+        return $this->dispatch(BorrowBookCommand::fromRequest($request));
     }
 }

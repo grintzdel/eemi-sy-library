@@ -8,7 +8,7 @@ use App\Modules\Book\Application\ViewModel\BookViewModel;
 use App\Modules\Book\Domain\Error\BookNotFoundError;
 use App\Modules\Book\Domain\Repository\IBookRepository;
 
-readonly class GetBookByIdQueryHandler
+final readonly class GetBookByIdQueryHandler
 {
     public function __construct(
         private IBookRepository $bookRepository
@@ -17,7 +17,7 @@ readonly class GetBookByIdQueryHandler
 
     public function handle(GetBookByIdQuery $query): BookViewModel
     {
-        $book = $this->bookRepository->findById($query->id);
+        $book = $this->bookRepository->findById($query->id->value);
 
         if (!$book) {
             throw new BookNotFoundError();

@@ -8,7 +8,7 @@ use App\Modules\User\Application\ViewModel\UserViewModel;
 use App\Modules\User\Domain\Repository\IUserRepository;
 use App\Modules\User\Infrastructure\Entity\UserEntity;
 
-readonly class CreateUserCommandHandler
+final readonly class CreateUserCommandHandler
 {
     public function __construct(
         private IUserRepository $userRepository

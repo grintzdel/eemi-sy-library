@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Book\Application\Query;
 
-readonly class GetBookByIdQuery
+use App\Modules\Shared\Domain\ValueObject\BookId;
+
+final readonly class GetBookByIdQuery
 {
     public function __construct(
-        public int $id
+        public BookId $id
     ) {
     }
 }

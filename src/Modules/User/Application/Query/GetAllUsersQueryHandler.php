@@ -7,7 +7,7 @@ namespace App\Modules\User\Application\Query;
 use App\Modules\User\Application\ViewModel\UserViewModel;
 use App\Modules\User\Domain\Repository\IUserRepository;
 
-readonly class GetAllUsersQueryHandler
+final readonly class GetAllUsersQueryHandler
 {
     public function __construct(
         private IUserRepository $userRepository
