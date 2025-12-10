@@ -69,7 +69,19 @@ Body: {"bookTitle": "...", "userId": "..."}
    ✗ BookNotFoundError (404) si livre inexistant
    ✗ UserNotFoundError (404) si utilisateur inexistant
    ✗ BookAlreadyBorrowedError (400) si livre déjà emprunté
-   ✗ RuntimeException si utilisateur a déjà 3 livres
+   ✗ BorrowLimitExceededError (400) si utilisateur a déjà 3 livres
+→ SuccessViewModel
+```
+
+#### 5. Retourner un livre
+```
+POST /api/books/return
+Body: {"bookTitle": "...", "userId": "..."}
+→ ReturnBookCommand::fromRequest()
+   ✗ InvalidArgumentException si bookTitle/userId manquant
+→ ReturnBookCommandHandler
+   ✗ BookNotFoundError (404) si livre inexistant
+   ✗ UserNotFoundError (404) si utilisateur inexistant
 → SuccessViewModel
 ```
 
@@ -142,5 +154,52 @@ La validation est déléguée aux Commands/Queries :
 
 ### Utilisateur (User)
 - ID : string généré via `uniqid('user_', true)`
-- Limite : 3 livres empruntés maximum
+- Limite : 3 livres empruntés maximum (via `BorrowLimitService`)
 - Liste des livres empruntés stockée en JSON
+
+## Technologies
+
+- **Symfony 7.x** : Framework
+- **Doctrine ORM** : Persistence
+- **Symfony Messenger** : Bus CQRS (CommandBus, QueryBus)
+- **Docker + FrankenPHP** : Runtime
+
+## Installation
+
+1. Installer Docker Compose (v2.10+)
+2. Builder les images : `docker compose build --pull --no-cache`
+3. Démarrer : `docker compose up --wait`
+4. Accéder à l'API : `https://localhost/api`
+
+## Exemples de requêtes
+
+```bash
+# Créer un utilisateur
+curl -X POST https://localhost/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe"}'
+
+# Ajouter un livre
+curl -X POST https://localhost/api/books \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Clean Code", "author": "Robert Martin"}'
+
+# Emprunter un livre
+curl -X POST https://localhost/api/books/borrow \
+  -H "Content-Type: application/json" \
+  -d '{"bookTitle": "Clean Code", "userId": "user_xxx"}'
+
+# Retourner un livre
+curl -X POST https://localhost/api/books/return \
+  -H "Content-Type: application/json" \
+  -d '{"bookTitle": "Clean Code", "userId": "user_xxx"}'
+
+# Lister les livres
+curl https://localhost/api/books
+
+# Récupérer un livre
+curl https://localhost/api/books/book_xxx
+
+# Récupérer un utilisateur
+curl https://localhost/api/users/user_xxx
+```
