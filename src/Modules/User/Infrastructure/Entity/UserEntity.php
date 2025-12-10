@@ -49,10 +49,6 @@ class UserEntity
 
     public function addBorrowedBook(BookEntity $book): self
     {
-        if (count($this->borrowedBooks) >= 3) {
-            throw new \RuntimeException('User cannot borrow more than 3 books');
-        }
-
         $this->borrowedBooks[] = $book->getId();
         return $this;
     }
