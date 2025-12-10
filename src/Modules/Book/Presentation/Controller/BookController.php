@@ -6,6 +6,7 @@ namespace App\Modules\Book\Presentation\Controller;
 
 use App\Modules\Book\Application\Command\AddBookCommand;
 use App\Modules\Book\Application\Command\BorrowBookCommand;
+use App\Modules\Book\Application\Command\ReturnBookCommand;
 use App\Modules\Book\Application\Query\GetAllBooksQuery;
 use App\Modules\Book\Application\Query\GetBookByIdQuery;
 use App\Modules\Shared\Domain\ValueObject\BookId;
@@ -52,5 +53,14 @@ final class BookController extends AppController
     public function borrowBook(Request $request): JsonResponse
     {
         return $this->dispatch(BorrowBookCommand::fromRequest($request));
+    }
+
+    /**
+     * @throws ExceptionInterface
+     */
+    #[Route('/return', methods: ['POST'])]
+    public function returnBook(Request $request): JsonResponse
+    {
+        return $this->dispatch(ReturnBookCommand::fromRequest($request));
     }
 }
