@@ -1,6 +1,176 @@
-# Library Management System
+# Nouvelle architecture
 
-API de gestion de bibliothèque construite avec Symfony, suivant une architecture modulaire avec CQRS et DDD.
+**✅ Séparation en modules** : `Book/`, `User/`, `Shared/`
+**✅ Architecture hexagonale** : Presentation → Application → Domain → Infrastructure
+**✅ CQRS** : Commands (écriture) et Queries (lecture) séparées
+**✅ ValueObjects** : `UserId`, `BookId` typés et validés
+**✅ Services métier** : `BorrowLimitService` pour la règle des 3 livres
+**✅ Exceptions typées** : `BookAlreadyBorrowedError`, `BorrowLimitExceededError`
+**✅ Controllers minimalistes** : Une seule ligne par méthode
+
+### Mapping des fonctionnalités
+
+| Original | Nouvelle architecture |
+|----------|----------------------|
+| `Book::$a` (ID) | `BookEntity::$id` (string) + `BookId` ValueObject |
+| `Book::g()` (emprunter) | `BorrowBookCommand` + `BorrowBookCommandHandler` |
+| `Book::h()` (retourner) | `ReturnBookCommand` + `ReturnBookCommandHandler` |
+| `User::$z` (livres) | `UserEntity::$borrowedBooks` (private, encapsulé) |
+| `User::i()` (limite 3) | `BorrowLimitService::ensureCanBorrowBook()` |
+| `User::j()` (retirer) | `UserEntity::removeBorrowedBook()` |
+| `LibraryController::addBook()` | `BookController::addBook()` + `AddBookCommandHandler` |
+| Validation dans controller | Validation dans `Command::fromRequest()` |
+| Retour de strings | Exceptions métier + ViewModels |
+
+### Exemples de code : Avant / Après
+
+#### 🔴 Avant : Book.php (illisible)
+```php
+class Book {
+    public $a; // ID
+    public $b; // Titre
+    public $c; // Auteur
+    public $d = false; // Statut d'emprunt
+
+    public function g() { // Emprunter un livre
+        if ($this->d) {
+            return "Déjà pris.";
+        }
+        $this->d = true;
+        $this->e = new \DateTime();
+        return "Pris.";
+    }
+}
+```
+
+#### 🟢 Après : Architecture Clean
+```php
+// BookEntity.php (Infrastructure)
+class BookEntity {
+    private ?string $id = null;
+    private string $title;
+    private string $author;
+    private bool $borrowed = false;
+
+    public function borrow(): self {
+        $this->borrowed = true;
+        $this->borrowedAt = new \DateTime();
+        return $this;
+    }
+}
+
+// BorrowBookCommandHandler.php (Application)
+public function handle(BorrowBookCommand $command): SuccessViewModel {
+    $book = $this->bookRepository->findByTitle($command->bookTitle);
+    if (!$book) throw new BookNotFoundError();
+    if ($book->isBorrowed()) throw new BookAlreadyBorrowedError();
+
+    $book->borrow();
+    return new SuccessViewModel('Book borrowed successfully');
+}
+```
+
+#### 🔴 Avant : User.php (règle métier mal placée)
+```php
+class User {
+    public $x; // ID
+    public $z = []; // Livres empruntés
+
+    public function i($b) {
+        if (count($this->z) >= 3) {
+            return "Trop de livres.";
+        }
+        $this->z[] = $b;
+        return "OK.";
+    }
+}
+```
+
+#### 🟢 Après : Service métier dédié
+```php
+// BorrowLimitService.php (Infrastructure/Service)
+class BorrowLimitService {
+    private const int MAX_BORROWED_BOOKS = 3;
+
+    public function ensureCanBorrowBook(UserEntity $user): void {
+        if (count($user->getBorrowedBooks()) >= self::MAX_BORROWED_BOOKS) {
+            throw new BorrowLimitExceededError($this->getMaximumBorrowLimit());
+        }
+    }
+}
+
+// UserEntity.php (Infrastructure - sans logique métier)
+class UserEntity {
+    private array $borrowedBooks = [];
+
+    public function addBorrowedBook(BookEntity $book): self {
+        $this->borrowedBooks[] = $book->getId();
+        return $this;
+    }
+}
+```
+
+#### 🔴 Avant : LibraryController.php (tout mélangé)
+```php
+#[Route('/library')]
+class LibraryController extends AbstractController {
+    #[Route('/add-book', methods: ['POST'])]
+    public function addBook(Request $req): JsonResponse {
+        $data1 = json_decode($req->getContent(), true);
+
+        if (!isset($data1['t']) || !isset($data1['a'])) {
+            return new JsonResponse(['error' => 'Informations incomplètes'], 400);
+        }
+
+        $b = new Book();
+        $b->b = $data1['t'];
+        $b->c = $data1['a'];
+        $this->em->persist($b);
+        $this->em->flush();
+        return new JsonResponse(['m' => 'OK']);
+    }
+}
+```
+
+#### 🟢 Après : Controllers minimalistes + CQRS
+```php
+// BookController.php (Presentation)
+#[Route('/api/books')]
+final class BookController extends AppController {
+    #[Route('', methods: ['POST'])]
+    public function addBook(Request $request): JsonResponse {
+        return $this->dispatch(AddBookCommand::fromRequest($request));
+    }
+}
+
+// AddBookCommand.php (Application)
+final readonly class AddBookCommand {
+    private function __construct(
+        public string $title,
+        public string $author
+    ) {}
+
+    public static function fromRequest(Request $request): self {
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['title']) || !isset($data['author'])) {
+            throw new \InvalidArgumentException('Title and author are required');
+        }
+        return new self($data['title'], $data['author']);
+    }
+}
+
+// AddBookCommandHandler.php (Application)
+public function handle(AddBookCommand $command): SuccessViewModel {
+    $book = new BookEntity();
+    $book->setTitle($command->title);
+    $book->setAuthor($command->author);
+
+    $this->bookRepository->save($book);
+    $this->bookRepository->flush();
+
+    return new SuccessViewModel('Book added successfully');
+}
+```
 
 ## Architecture
 
@@ -156,20 +326,6 @@ La validation est déléguée aux Commands/Queries :
 - ID : string généré via `uniqid('user_', true)`
 - Limite : 3 livres empruntés maximum (via `BorrowLimitService`)
 - Liste des livres empruntés stockée en JSON
-
-## Technologies
-
-- **Symfony 7.x** : Framework
-- **Doctrine ORM** : Persistence
-- **Symfony Messenger** : Bus CQRS (CommandBus, QueryBus)
-- **Docker + FrankenPHP** : Runtime
-
-## Installation
-
-1. Installer Docker Compose (v2.10+)
-2. Builder les images : `docker compose build --pull --no-cache`
-3. Démarrer : `docker compose up --wait`
-4. Accéder à l'API : `https://localhost/api`
 
 ## Exemples de requêtes
 
